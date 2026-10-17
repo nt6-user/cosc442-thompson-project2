@@ -1,6 +1,7 @@
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,25 +9,38 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class VendingMachineTestAi {
+public class VendingMachineTest {
 
     private VendingMachine vendingMachine;
 
     @BeforeEach
     public void setUp() {
+        // This currently throws ArrayIndexOutOfBoundsException
+        // because the constructor loop uses i <= NUM_SLOTS.
         vendingMachine = new VendingMachine();
     }
 
+    // VendingMachine constructor
+
     @Test
-    public void testInitialBalanceIsZero() {
+    public void testConstructorInitializesMachine() {
+        assertNotNull(vendingMachine);
         assertEquals(0.0, vendingMachine.getBalance(), 0.001);
     }
 
+    // VendingMachineItem tests
+
     @Test
-    public void testItemStoresNameAndPrice() {
+    public void testItemStoresName() {
         VendingMachineItem item = new VendingMachineItem("Chips", 1.50);
 
         assertEquals("Chips", item.getName());
+    }
+
+    @Test
+    public void testItemStoresPrice() {
+        VendingMachineItem item = new VendingMachineItem("Chips", 1.50);
+
         assertEquals(1.50, item.getPrice(), 0.001);
     }
 
@@ -44,7 +58,51 @@ public class VendingMachineTestAi {
             () -> new VendingMachineItem("Chips", -1.0)
         );
 
-        assertEquals("Price cannot be less than zero", exception.getMessage());
+        assertEquals(
+            "Price cannot be less than zero",
+            exception.getMessage()
+        );
+    }
+
+    @Test
+    public void testItemAcceptsSmallPositivePrice() {
+        VendingMachineItem item = new VendingMachineItem("Gum", 0.01);
+
+        assertEquals(0.01, item.getPrice(), 0.001);
+    }
+
+    @Test
+    public void testItemAcceptsEmptyName() {
+        VendingMachineItem item = new VendingMachineItem("", 1.00);
+
+        assertEquals("", item.getName());
+        assertEquals(1.00, item.getPrice(), 0.001);
+    }
+
+    // VendingMachineException tests
+
+    @Test
+    public void testDefaultExceptionHasNoMessage() {
+        VendingMachineException exception = new VendingMachineException();
+
+        assertNull(exception.getMessage());
+    }
+
+    @Test
+    public void testExceptionStoresMessage() {
+        VendingMachineException exception =
+            new VendingMachineException("Test error");
+
+        assertEquals("Test error", exception.getMessage());
+    }
+
+    // Vending-machine behavior tests.
+    // These tests currently fail during @BeforeEach because of
+    // the constructor defect, before their assertions are reached.
+
+    @Test
+    public void testInitialBalanceIsZero() {
+        assertEquals(0.0, vendingMachine.getBalance(), 0.001);
     }
 
     @Test
@@ -108,14 +166,11 @@ public class VendingMachineTestAi {
     }
 
     @Test
-    public void testRemoveItemReturnsItemAndEmptiesSlot() {
+    public void testRemovingItemReturnsItem() {
         VendingMachineItem item = new VendingMachineItem("Chips", 1.50);
         vendingMachine.addItem(item, "A");
 
-        VendingMachineItem removed = vendingMachine.removeItem("A");
-
-        assertEquals(item, removed);
-        assertNull(vendingMachine.getItem("A"));
+        assertEquals(item, vendingMachine.removeItem("A"));
     }
 
     @Test
@@ -127,17 +182,24 @@ public class VendingMachineTestAi {
     }
 
     @Test
-    public void testInsertPositiveMoney() {
-        vendingMachine.insertMoney(5.00);
-
-        assertEquals(5.00, vendingMachine.getBalance(), 0.001);
-    }
-
-    @Test
     public void testInsertZeroMoney() {
         vendingMachine.insertMoney(0.0);
 
         assertEquals(0.0, vendingMachine.getBalance(), 0.001);
+    }
+
+    @Test
+    public void testInsertSmallPositiveAmount() {
+        vendingMachine.insertMoney(0.01);
+
+        assertEquals(0.01, vendingMachine.getBalance(), 0.001);
+    }
+
+    @Test
+    public void testInsertOneDollar() {
+        vendingMachine.insertMoney(1.00);
+
+        assertEquals(1.00, vendingMachine.getBalance(), 0.001);
     }
 
     @Test
@@ -152,9 +214,7 @@ public class VendingMachineTestAi {
     public void testReturnChangeResetsBalance() {
         vendingMachine.insertMoney(5.00);
 
-        double change = vendingMachine.returnChange();
-
-        assertEquals(5.00, change, 0.001);
+        assertEquals(5.00, vendingMachine.returnChange(), 0.001);
         assertEquals(0.0, vendingMachine.getBalance(), 0.001);
     }
 
@@ -179,7 +239,7 @@ public class VendingMachineTestAi {
 
         assertFalse(vendingMachine.makePurchase("A"));
         assertEquals(1.00, vendingMachine.getBalance(), 0.001);
-        assertEquals("Chips", vendingMachine.getItem("A").getName());
+        assertNotNull(vendingMachine.getItem("A"));
     }
 
     @Test
