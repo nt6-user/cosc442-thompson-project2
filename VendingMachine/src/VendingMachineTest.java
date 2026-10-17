@@ -214,6 +214,33 @@ public class VendingMachineTest {
     }
 
     @Test
+public void testAddItemSlotB() throws VendingMachineException {
+    VendingMachineItem item = new VendingMachineItem("Chips", 1.50);
+
+    vendingMachine.addItem(item, "B");
+
+    assertEquals(item, vendingMachine.getItem("B"));
+}
+
+@Test
+public void testAddItemSlotC() throws VendingMachineException {
+    VendingMachineItem item = new VendingMachineItem("Candy", 1.00);
+
+    vendingMachine.addItem(item, "C");
+
+    assertEquals(item, vendingMachine.getItem("C"));
+}
+
+@Test
+public void testAddItemSlotD() throws VendingMachineException {
+    VendingMachineItem item = new VendingMachineItem("Water", 2.00);
+
+    vendingMachine.addItem(item, "D");
+
+    assertEquals(item, vendingMachine.getItem("D"));
+}
+
+    @Test
     public void testVendingMachineItemNegativePrice() {
         // Act and Assert
         try {
